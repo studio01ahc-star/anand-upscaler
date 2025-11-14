@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-boto3
-aiofiles
-requests
-python-multipart
-jinja2
