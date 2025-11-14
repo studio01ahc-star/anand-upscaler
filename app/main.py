@@ -14,6 +14,7 @@ app = FastAPI(title='Anand Upscaler - CPU mode (ESRGAN-lite fallback)')
 # Serve static files (CSS, JS) from app/ui folder under /static URL path
 app.mount('/static', StaticFiles(directory='app/ui'), name='static')
 
+
 UPLOAD_DIR = 'inputs'
 OUTPUT_DIR = 'outputs'
 
