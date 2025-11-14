@@ -1,62 +1,55 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Anand Upscaler</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8"/>
+  <title>Video Upscaler</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/dropzone@6/dist/dropzone.css"/>
 </head>
 <body>
-<div class="blob one"></div>
-<div class="blob two"></div>
-<div class="toggle" onclick="toggleTheme()">🌗</div>
-<div class="container">
-  <div class="card" id="mainCard">
-    <div class="header">
-      <div class="logo">A</div>
-      <div>
-        <div class="title">Anand Upscaler</div>
-        <div class="subtitle">Fast ESRGAN (CPU-mode attempt) — free & public</div>
-      </div>
-    </div>
-    <div id="uploader">
-      <div class="upload-box" id="dropzone">Drop your video here or click to browse</div>
-      <input type="file" id="fileInput" accept="video/*" style="display:none">
-      <div class="controls">
-        <button class="btn primary" id="uploadBtn">Upload & Upscale</button>
-        <div class="small">Max: 300MB</div>
-      </div>
-      <div class="progress-bar" id="uploadBarCont" style="display:none"><div class="bar" id="uploadBar"></div></div>
-      <div class="status-row">
-        <div class="meta" id="statusMeta">Waiting for upload</div>
-        <div id="circle" class="circle-wrap" style="display:none"></div>
-      </div>
-      <div class="meta" id="resultArea"></div>
-    </div>
+  <div class="container">
+    <h1>Upload your video</h1>
+    <form action="/upload" class="dropzone" id="my-dropzone"></form>
+    <div id="job-status" style="margin-top:20px;"></div>
   </div>
-  <div style="width:340px">
-    <div class="card" style="padding:18px;margin-top:6px">
-      <div style="font-weight:700;margin-bottom:8px">Preview</div>
-      <div class="small">You can preview the chosen file before upscaling.</div>
-      <video id="preview" controls style="width:100%;margin-top:12px;border-radius:8px;display:none"></video>
-    </div>
-    <div class="card" style="padding:16px;margin-top:14px">
-      <div style="font-weight:700;margin-bottom:8px">Tips</div>
-      <div class="small">For best results, use short clips & choose higher-quality inputs. CPU upscaling is slow — consider a GPU worker later.</div>
-    </div>
-  </div>
-</div>
-<canvas id="stickCanvas" width="260" height="240"></canvas>
-<div class="overlay" id="overlay">
-  <div class="loader-card">
-    <div style="font-size:22px;font-weight:700">Upscaling…</div>
-    <div class="loader-text" id="overlayText">Preparing</div>
-    <div style="height:14px"></div>
-    <div class="progress-bar" style="width:300px"><div class="bar" id="overlayBar" style="width:0%"></div></div>
-  </div>
-</div>
-<audio id="doneSound"><source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/mpeg"></audio>
+  <script src="https://unpkg.com/dropzone@6/dist/dropzone-min.js"></script>
+  <script>
+    Dropzone.options.myDropzone = {
+      maxFiles: 1,
+      acceptedFiles: 'video/*',
+      dictDefaultMessage: "Drop a video file here or click to browse",
+      init: function() {
+        this.on("success", function(file, response) {
+          var job_id = response.job_id;
+          document.getElementById("job-status").innerHTML = "Upscaling started (Job: "+job_id+")";
+          var checkProgress = setInterval(function() {
+            fetch("/status/" + job_id)
+              .then(r => r.json())
+              .then(data => {
+                  if(data.status === "DONE") {
+                    document.getElementById("job-status").innerHTML =
+                      "<a href='/download/" + job_id + "' style='color:#fff;text-decoration:underline'>Download upscaled video</a>";
+                    clearInterval(checkProgress);
+                  } else if(data.status === "ERROR") {
+                    document.getElementById("job-status").innerHTML =
+                      "Error: " + data.error;
+                    clearInterval(checkProgress);
+                  } else {
+                    document.getElementById("job-status").innerHTML =
+                      "Progress: " + (data.progress || 0) + "%";
+                  }
+              });
+          }, 3000);
+        });
+        this.on("error", function(file, errorMessage) {
+          alert("Upload error: " + errorMessage);
+        });
+      }
+    };
+  </script>
+</body>
+</html>
+
 <script src="script.js"></script>
 </body>
 </html>
