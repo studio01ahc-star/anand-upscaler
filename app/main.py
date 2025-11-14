@@ -8,12 +8,21 @@ import tempfile
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title='Anand Upscaler - CPU mode (ESRGAN-lite fallback)')
 
-# Serve static files (CSS, JS) from app/ui folder under /static URL path
+# Mount static files directory to serve CSS, JS etc.
 app.mount('/static', StaticFiles(directory='app/ui'), name='static')
 
+# Add CORS middleware to allow frontend JS access cross-origin
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (adjust in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 UPLOAD_DIR = 'inputs'
 OUTPUT_DIR = 'outputs'
@@ -109,4 +118,3 @@ def download(job_id: str):
     if not job or job.get('status') != 'DONE' or not job.get('outfile'):
         raise HTTPException(status_code=404, detail='Result not ready')
     return FileResponse(job['outfile'], media_type='video/mp4', filename=os.path.basename(job['outfile']))
-
