@@ -5,3 +5,4 @@ services:
     dockerfilePath: ./Dockerfile
     plan: free
     autoDeploy: true
+
