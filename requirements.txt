@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+gunicorn
+python-multipart
+aiofiles
+pillow
+opencv-python-headless
+numpy
+jinja2
+requests
